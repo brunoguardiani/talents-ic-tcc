@@ -1,7 +1,8 @@
 import repository from '../repositories/ProfileRepository.js';
 import auth from '../utils/auth.js';
 import { buildProfileWhereClause, buildUserNameWhereClause } from '../utils/filters.js';
-
+import { recommended_vacancy } from '../utils/vacancyRecommendation.js';
+import JobRepository from '../repositories/JobRepository.js';
 //Get all searchable profiles
 export const getAllProfiles = async (req, res) => {
   try {
@@ -27,6 +28,26 @@ export const getProfileById = async (req, res) => {
         else throw new Error('Acesso não autorizado.');
       }
     } else res.json({ message: 'Perfil não encontrado.', error: true });
+  } catch (error) {
+    if (!error.auth) res.json({ message: error.message, error: true });
+    else res.json({ message: error.message, error: true, notAuthorized: true });
+  }
+};
+
+export const getOwnPerfil = async (req, res) => {
+  try {
+    const { userId } = auth.getTokenProperties(req.headers['x-access-token']);
+    const profile = await repository.getProfileByUserId(req.params.id);
+    if (profile) {
+      if (profile.userId == userId){
+        let bestJobs = []
+        const vagas = await recommended_vacancy(profile.dataValues);
+        if (vagas){
+          bestJobs = await Promise.all(vagas.map(async (i) => await JobRepository.getJobById(i.id)));
+        }
+        res.json({"bestJobs":bestJobs});
+      }
+    } else res.json({ message: 'Acesso não autorizado.', error: true });
   } catch (error) {
     if (!error.auth) res.json({ message: error.message, error: true });
     else res.json({ message: error.message, error: true, notAuthorized: true });

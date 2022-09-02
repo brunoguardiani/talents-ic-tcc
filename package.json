@@ -22,6 +22,7 @@
   "homepage": "https://github.com/mate85-vagas/vagas-backend#readme",
   "dependencies": {
     "bcrypt": "^5.0.1",
+    "content-based-recommender": "^1.5.0",
     "cors": "^2.8.5",
     "dom-parser": "^0.1.6",
     "dotenv": "^16.0.0",
