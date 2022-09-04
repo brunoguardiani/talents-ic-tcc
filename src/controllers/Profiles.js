@@ -41,11 +41,11 @@ export const getOwnPerfil = async (req, res) => {
     if (profile) {
       if (profile.userId == userId){
         let bestJobs = []
-        const vagas = await recommended_vacancy(profile.dataValues);
+        const vagas = await recommended_vacancy(userId, profile.dataValues);
         if (vagas){
           bestJobs = await Promise.all(vagas.map(async (i) => await JobRepository.getJobById(i.id)));
         }
-        res.json({"bestJobs":bestJobs});
+        res.json(bestJobs);
       }
     } else res.json({ message: 'Acesso não autorizado.', error: true });
   } catch (error) {

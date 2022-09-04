@@ -13,6 +13,17 @@ const getAllJobs = async (filters, itemsPerPage, pageNumber) => {
   return jobs;
 };
 
+const getOnlyJobsToRecommend = async (lista) => {
+  const jobs = await Job.findAll({
+    where: {
+      [JobAttrs.id] :{
+        [Op.notIn]: lista
+      }
+    }
+  })
+  return jobs
+}
+
 const getJobById = async (id) => {
   const job = await Job.findOne({
     where: {
@@ -83,5 +94,6 @@ export default {
   createJob,
   applyToJob,
   deleteExpiredJobs,
-  countValidJob
+  countValidJob,
+  getOnlyJobsToRecommend
 };
