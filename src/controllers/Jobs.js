@@ -6,6 +6,9 @@ import ProfileRepository from '../repositories/ProfileRepository.js';
 import { mail_sender } from '../utils/emailSender.js';
 import UserRepository from '../repositories/UserRepository.js';
 import { emailsListMail } from '../utils/emailSender.js';
+import User_JobScoreRepository from '../repositories/User_JobScoreRepository.js';
+import { User_JobScoreAttrs } from '../models/User_JobScoreAttrs.js';
+import User_JobScore from '../models/User_JobScoreModel.js';
 
 //Get all jobs from db (can return filtered data by HTTP GET params)
 export const getAllJobs = async (req, res) => {
@@ -61,6 +64,45 @@ export const updateJob = async (req, res) => {
         message: 'Vaga atualizada.'
       });
     } else res.status(401).json({ message: 'acesso não autorizado.', error: true, notAuthorized: true });
+  } catch (error) {
+    if (!error.auth) res.json({ message: error.message, error: true });
+    else res.json({ message: error.message, error: true, notAuthorized: true });
+  }
+};
+
+export const getFeedbackStatus = async(req, res) => {
+  try {
+    const jobId = req.params.jobId;
+    const { isAdmin, userId } = auth.getTokenProperties(req.headers['x-access-token']);
+
+    const status = await User_JobScoreRepository.getUser_JobScoreStatus(jobId, userId)
+    if (status) {
+      return res.json(status);
+    }
+    else {
+      res.status(401).json({message: 'Acesso não autorizado.', error: true, notAuthorized:true})
+    }
+  } catch (error) {
+    if (!error.auth) res.json({ message: error.message, error: true });
+    else res.json({ message: error.message, error: true, notAuthorized: true });
+  }
+} 
+
+export const updateStatusJob = async (req, res) => {
+  try {
+    const jobId = req.params.id;
+    const { isAdmin, userId } = auth.getTokenProperties(req.headers['x-access-token']);
+
+    if (await User_JobScore.findOne({
+      where: {
+        [User_JobScoreAttrs.jobId]:jobId,
+        [User_JobScoreAttrs.userId]:userId,
+      },})) {
+      await User_JobScoreRepository.updateUser_JobScoreStatus(req.body, userId, jobId);
+      return res.json({
+        message: 'Feedback recebido.'
+      });
+    } else res.status(401).json({ message: 'Acesso não autorizado.', error: true, notAuthorized: true });
   } catch (error) {
     if (!error.auth) res.json({ message: error.message, error: true });
     else res.json({ message: error.message, error: true, notAuthorized: true });

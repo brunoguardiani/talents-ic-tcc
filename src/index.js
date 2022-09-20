@@ -6,6 +6,7 @@ import profileRoutes from './routes/profileRoutes.js';
 import skillRoutes from './routes/skillRoutes.js';
 import healthCheckRoutes from './routes/healthCheckRoutes.js';
 import emailListRoutes from './routes/emailListRoutes.js';
+import User_JobScore from './models/User_JobScoreModel.js';
 import cors from 'cors';
 import connect from './utils/connection.js';
 import compression from 'express';
