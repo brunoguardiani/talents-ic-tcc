@@ -72,10 +72,10 @@ export const updateJob = async (req, res) => {
 
 export const getFeedbackStatus = async(req, res) => {
   try {
-    const jobId = req.params.jobId;
-    const { isAdmin, userId } = auth.getTokenProperties(req.headers['x-access-token']);
-
-    const status = await User_JobScoreRepository.getUser_JobScoreStatus(jobId, userId)
+    const jobId = req.params.id;
+    const { isAdmin, userId } = auth.getTokenProperties(req.headers['x-access-token'])
+    const result = await User_JobScoreRepository.getUser_JobScoreStatus(userId, jobId)
+    const { status } = result.dataValues
     if (status) {
       return res.json(status);
     }
@@ -92,7 +92,6 @@ export const updateStatusJob = async (req, res) => {
   try {
     const jobId = req.params.id;
     const { isAdmin, userId } = auth.getTokenProperties(req.headers['x-access-token']);
-
     if (await User_JobScore.findOne({
       where: {
         [User_JobScoreAttrs.jobId]:jobId,
