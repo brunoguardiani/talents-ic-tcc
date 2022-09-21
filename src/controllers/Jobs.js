@@ -72,10 +72,10 @@ export const updateJob = async (req, res) => {
 
 export const getFeedbackStatus = async(req, res) => {
   try {
-    const jobId = req.params.jobId;
+    const jobId = req.params.id;
     const { isAdmin, userId } = auth.getTokenProperties(req.headers['x-access-token']);
 
-    const status = await User_JobScoreRepository.getUser_JobScoreStatus(jobId, userId)
+    const status = await User_JobScoreRepository.getUser_JobScoreStatus(userId, jobId)
     if (status) {
       return res.json(status);
     }
