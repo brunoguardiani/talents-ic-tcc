@@ -1,12 +1,12 @@
 import ContentBasedRecommender from 'content-based-recommender'
-import { JobAttrs } from '../models/JobAttrs.js';
 import JobRepository from "../repositories/JobRepository.js"
 import User_JobRepository from '../repositories/User_JobRepository.js';
 import { Sequelize } from 'sequelize'
 import User_JobScoreRepository from '../repositories/User_JobScoreRepository.js';
-const { Op } = Sequelize
+import { Recommendation } from './recommendation.js';
 
 export const recommended_vacancy = async (userId, profile) => {
+    // START - Profile to be compared
     const technologies = profile.technologies.split(";");
     const scholarity = [profile.scholarity];
     const languages = profile.languages.split(";");
@@ -17,6 +17,8 @@ export const recommended_vacancy = async (userId, profile) => {
     arr_content = arr_content.concat(languages)
     arr_content = arr_content.concat(knowledges)
     const content = arr_content.toString()
+    //END - Getting profile
+
     const createdAndAppliedJobs = new Set()
     let createdJobsByUser = await User_JobRepository.getJobsByUserId(userId, true)
     createdJobsByUser = createdJobsByUser.rows
@@ -48,26 +50,16 @@ export const recommended_vacancy = async (userId, profile) => {
                 training_array.push({"id": id, "content": job_content})
             }
     });
+    const recommender = new Recommendation(training_array, content, 10)
 
-    training_array.push({
-        "id":"objeto_de_treino",
-        "content": content
-    })
-    const recommender = new ContentBasedRecommender({
-        maxSimilarDocuments: 20
-    });
-    recommender.train(training_array);
-    
-    const bestJobs = recommender.getSimilarDocuments("objeto_de_treino");
+    const bestJobs = recommender.get_recommendation();
 
     const newBestJobs = await returnAdjustedBestJobs(bestJobs, userId)
-    console.log(newBestJobs)
 
-    return bestJobs
+    return newBestJobs
 }
 
 export const returnAdjustedBestJobs = async (list, userId) => {
-    let i = 0
     return Promise.all(
         list.map(async item => {
             const { id, status } = await User_JobScoreRepository.getUser_JobScoreStatus(userId, item.id);

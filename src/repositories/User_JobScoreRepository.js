@@ -20,14 +20,10 @@ const getUser_JobScoreStatus = async (userId, jobId) => {
       exclude: [User_JobScoreAttrs.userId, User_JobScoreAttrs.jobId]
     },
   })
-
   return status_userjob
 }
 
 const updateUser_JobScoreStatus = async (body,userId, jobId) => {
-  if (body.status == getUser_JobScoreStatus(userId, jobId)){
-    body.status = 'neutro'
-  }
   const queryResult = await User_JobScore.update(body, {
     where: {
       [User_JobScoreAttrs.userId]: userId,

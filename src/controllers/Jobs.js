@@ -9,6 +9,7 @@ import { emailsListMail } from '../utils/emailSender.js';
 import User_JobScoreRepository from '../repositories/User_JobScoreRepository.js';
 import { User_JobScoreAttrs } from '../models/User_JobScoreAttrs.js';
 import User_JobScore from '../models/User_JobScoreModel.js';
+import { recommended_users_to_job } from '../utils/profilesRecommendation.js';
 
 //Get all jobs from db (can return filtered data by HTTP GET params)
 export const getAllJobs = async (req, res) => {
@@ -17,6 +18,7 @@ export const getAllJobs = async (req, res) => {
     const itemsPerPage = parseInt(req.query.itemsPerPage);
     const filters = buildJobWhereClause(req);
     const jobs = await repository.getAllJobs(filters, itemsPerPage, pageNumber);
+    console.log(jobs)
     res.json(jobs);
   } catch (error) {
     res.json({ message: error.message, error: true });
@@ -27,6 +29,10 @@ export const getAllJobs = async (req, res) => {
 export const getJobById = async (req, res) => {
   try {
     const jobInfo = await User_JobRepository.getInformationByJobId(req.params.id);
+    const { isAdmin, userId } = auth.getTokenProperties(req.headers['x-access-token']);
+    if (userId == jobInfo.dataValues.userId){
+      jobInfo.dataValues['recmd_profiles'] = await recommended_users_to_job(userId, jobInfo.dataValues.job.dataValues)
+    }
     if (jobInfo) res.json(jobInfo);
     else res.json({ message: 'Vaga não encontrada.', error: true });
   } catch (error) {
